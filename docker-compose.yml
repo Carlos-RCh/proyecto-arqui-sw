@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  postgres_db:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: carlos
+      POSTGRES_PASSWORD: 213207091
+      POSTGRES_DB: consultorio
+    ports:
+      - "6000:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  soabus:
+    image: jrgiadach/soabus:v1
+    container_name: soabus
+    ports:
+      - "5000:5000"
+    restart: always
