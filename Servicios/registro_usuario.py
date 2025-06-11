@@ -17,7 +17,7 @@ conn = psycopg2.connect(
     port="6000"
 )
 cursor = conn.cursor()
-
+# LUEGO LO BORAMOS XD
 try:
     # Enviar mensaje de inicio
     message = b'00010sinitruser'
