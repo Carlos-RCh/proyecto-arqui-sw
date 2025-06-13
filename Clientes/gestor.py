@@ -3,52 +3,91 @@ import sys
 
 # Crear un socket TCP/IP
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Conectar al puerto 5000 donde está escuchando el servicio
 bus_address = ('localhost', 5000)
 print('Conectando a {} puerto {}'.format(*bus_address))
 sock.connect(bus_address)
-# mensaje = b'hclin'
 
 try:
     while True:
         if input('¿Deseas enviar una transacción? (y/n): ') != 'y':
             break
 
-        opcion = input("Opción 1) Autenticación, 2) Registra Usuario, 3) Gestion Usuarios: ")
+        opcion = input(" Opción 1) Autenticación, 2) Gestión Médicos, 3) Gestión Admin : ")
 
         if opcion == "1":
             servicio = b'auten'
             mensaje = servicio
-            mensaje += input("Ingresa correo: ").encode() + b' '
-            mensaje += input("Ingresa contraseña: ").encode()
+            mensaje += input(" - Ingresa correo: ").encode() + b'|'
+            mensaje += input(" - Ingresa contraseña: ").encode()
 
-        elif opcion == "2":
-            servicio = b'ruser'
-            mensaje = servicio
-            mensaje += input("Ingresa nombre: ").encode() + b' '
-            mensaje += input("Ingresa correo: ").encode() + b' '
-            mensaje += input("Ingresa contraseña: ").encode() + b' '
-            mensaje += b'gestor'
+        elif opcion == "2":  # Gestión Médicos
+            accion = input(" ¿Deseas crear o eliminar médico? (crear/eliminar): ").strip().lower()
 
-        elif opcion == "3":
+            if accion == "eliminar":
+                servicio = b'guser'
+                mensaje = servicio
+                mensaje += b"eliminar|"
+                id_medico = input(" - Ingresa ID del médico a eliminar: ").encode()
+                mensaje += id_medico
+                
+            elif accion == "crear":
+                servicio = b'ruser'
+                mensaje = servicio
+                mensaje += input(" - Nombre: ").encode() + b'|'
+                mensaje += input(" - Correo: ").encode() + b'|'
+                mensaje += input(" - Contraseña: ").encode() + b'|'
+                mensaje += b'medico|'
+
+                while True:
+                    especialidad = input(" - Especialidad (Cardiologia/Pediatria/Dermatologa/General): ").strip()
+                    if especialidad in ['Pediatria', 'Cardiologia', 'General', 'Dermatologa']:
+                        mensaje += especialidad.encode()
+                        break
+                    else:
+                        print(" Opción inválida !")
+                
+            else:
+                print("Opción inválida. Intenta nuevamente.")
+                continue
+
+        elif opcion == "3":  # Gestión Admin
             servicio = b'guser'
             mensaje = servicio
-            mensaje += input("Ingresa accion (crear/eliminar): ").encode() +b' '
-            mensaje += input("Ingresa Datos: ").encode()
+            # Preguntar si deseas crear o eliminar
+            accion = input("¿Deseas crear o eliminar administrador? (crear/eliminar): ").strip().lower()
+
+            if accion == "eliminar":
+                servicio = b'guser'
+                mensaje = servicio
+                mensaje += b"eliminar|"
+                id_admin = input("Ingresa ID del administrador a eliminar: ").encode() + b'|'
+                mensaje += id_admin
             
+            elif accion == "crear":
+                servicio = b'ruser'
+                mensaje = servicio
+                mensaje += input(" - Nombre: ").encode() + b'|'
+                mensaje += input(" - Correo: ").encode() + b'|'
+                mensaje += input(" - Contraseña: ").encode() + b'|'
+                mensaje += b'administrativo|'
+                mensaje += b'extra'
+                
+            else:
+                print("Opción inválida. Intenta nuevamente.")
+                continue
+
         else:
             print("Opción inválida.")
             continue
 
+        # Agregar longitud del mensaje
         numero = str(len(mensaje)).rjust(5, '0')
         mensaje = numero.encode() + mensaje
 
-        print('mensaje en bytes')
-        print('sending {!r}'.format(mensaje))
+        print('Enviando {!r}'.format(mensaje))
         sock.sendall(mensaje)
 
-        print("Waiting for transaction")
+        print(" [ Esperando transacción ... ]")
         amount_received = 0
         amount_expected = int(sock.recv(5))
 
@@ -56,8 +95,8 @@ try:
             data = sock.recv(amount_expected - amount_received)
             amount_received += len(data)
 
-        print("Checking servi answer ...")
-        print('received {!r}'.format(data))
+        print(" [ Verificando respuesta del servicio ... ]")
+        print('Recibido {!r}'.format(data))
 
 finally:
     print('closing socket')

@@ -38,7 +38,7 @@ cursor.execute("""
 CREATE TABLE IF NOT EXISTS medico (
     id SERIAL PRIMARY KEY,
     id_usuario INTEGER NOT NULL,
-    especialidad TEXT NOT NULL CHECK (especialidad IN ('Pediatría', 'Cardiología', 'General', 'Dermatología')),
+    especialidad TEXT NOT NULL CHECK (especialidad IN ('Pediatria', 'Cardiologia', 'General', 'Dermatologa')),
     horarios_disponibles JSON,
     FOREIGN KEY (id_usuario) REFERENCES usuario(id) ON DELETE CASCADE
 );

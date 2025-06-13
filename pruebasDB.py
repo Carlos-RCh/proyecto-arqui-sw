@@ -20,7 +20,7 @@ try:
     # Mostrar los usuarios
     print("Usuarios registrados:")
     for usuario in usuarios:
-        print(f"ID: {usuario[0]}, Nombre: {usuario[1]}, Correo: {usuario[2]}, Contraseña: {usuario[3]}")
+        print(f"ID: {usuario[0]}, Nombre: {usuario[1]}, Correo: {usuario[2]}, Contraseña: {usuario[3]}, ROl: {usuario[4]}")
 
 finally:
     cursor.close()

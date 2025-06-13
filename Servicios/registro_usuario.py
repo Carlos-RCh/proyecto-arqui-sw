@@ -74,8 +74,8 @@ try:
                 conn.commit()
                 print(" -Usuario médico registrado correctamente.")
             
-            elif tipo_usuario == "admi":
-                
+            elif tipo_usuario == "administrativo":
+                conn.commit()
                 print(" -Usuario administrativo registrado correctamente.")
 
             else:
