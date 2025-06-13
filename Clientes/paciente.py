@@ -8,19 +8,13 @@ sock.connect(bus_address)
 
 try:
     while True:
-        if input('¿Deseas enviar una transacción? (y/n): ') != 'y':
+        if input(' ¿Deseas enviar una transacción? (y/n): ') != 'y':
             break
 
-        opcion = input("Opción 1) Autenticación, 2) Registrar Usuario, 3) Agendar Cita, 4) Notificar Cita: ")
+        opcion = input(" Opción 1) Registrar Usuario , 2) Autenticación , 3) Agendar Cita, 4) Notificar Cita: ")
         print(" Ingrese:")
         
         if opcion == "1":
-            servicio = b'auten'
-            mensaje = servicio
-            mensaje += input("Ingresa correo: ").encode() + b'|'
-            mensaje += input("Ingresa contraseña: ").encode()
-
-        elif opcion == "2":
             servicio = b'ruser'
             mensaje = servicio
             mensaje += input(" - Nombre: ").encode() + b'|'
@@ -35,7 +29,13 @@ try:
                     mensaje += seguro_salud.encode()
                     break
                 else:
-                    print("Opción inválida.")
+                    print(" Opción inválida !")
+    
+        elif opcion == "2":
+            servicio = b'auten'
+            mensaje = servicio
+            mensaje += input("Ingresa correo: ").encode() + b'|'
+            mensaje += input("Ingresa contraseña: ").encode()
 
 
         elif opcion == "3":
@@ -53,18 +53,17 @@ try:
             mensaje += input("Ingresa correo del paciente: ").encode()
             
         else:
-            print("Opción inválida.")
+            print(" Opción inválida !")
             continue
 
 
         numero = str(len(mensaje)).rjust(5, '0')
         mensaje = numero.encode() + mensaje
 
-        print('mensaje en bytes')
-        print('sending {!r}'.format(mensaje))
+        print(' Enviando {!r}'.format(mensaje))
         sock.sendall(mensaje)
 
-        print("Waiting for transaction")
+        print(" [ Esperando transacción ... ]")
         amount_received = 0
         amount_expected = int(sock.recv(5))
 
@@ -72,8 +71,9 @@ try:
             data = sock.recv(amount_expected - amount_received)
             amount_received += len(data)
 
-        print("Checking servi answer ...")
-        print('received {!r}'.format(data))
+        print(" [ Verificando respuesta del servicio ... ]")
+        print(' Recibido {!r}'.format(data))
+
 
 finally:
     print('closing socket')

@@ -17,7 +17,7 @@ conn = psycopg2.connect(
     port="6000"
 )
 cursor = conn.cursor()
-# LUEGO LO BORAMOS XD
+
 try:
     # Enviar mensaje de inicio
     message = b'00010sinitruser'
@@ -27,18 +27,18 @@ try:
     sinit = 1
 
     while True:
-        print("Esperando transacción")
+        print(" [ Esperando transacción ... ]")
         amount_expected = int(sock.recv(5))
         data = b""
         while len(data) < amount_expected:
             data += sock.recv(amount_expected - len(data))
 
-        print("Procesando ...")
-        print('Mensaje recibido {!r}'.format(data))
+        print(" [ Procesando ... ]")
+        print(' -Mensaje recibido {!r}'.format(data))
 
         if sinit == 1:
             sinit = 0
-            print('Recibido mensaje de inicio (sinit answer)')
+            print(' -Recibido mensaje de inicio (sinit answer)')
         else:
             mensaje = data.decode()
             servicio = mensaje[:5]
@@ -49,7 +49,7 @@ try:
             contrasena = datos[2]
             tipo_usuario = datos[3]
 
-            print(f"Servicio: {servicio}, Nombre: {nombre}, Correo: {correo}, Contraseña: {contrasena}, Tipo de Usuario: {tipo_usuario}")
+            print(f" [ Servicio: {servicio}, Nombre: {nombre}, Correo: {correo}, Contraseña: {contrasena}, Tipo de Usuario: {tipo_usuario} ]")
 
             cursor.execute("""
             INSERT INTO usuario (nombre, correo, contrasena, rol)
@@ -63,7 +63,7 @@ try:
                 VALUES ((SELECT id FROM usuario WHERE correo = %s), %s)
                 """, (correo, seguro))
                 conn.commit()
-                print("Usuario paciente registrado correctamente.")
+                print(" -Usuario paciente registrado correctamente.")
 
             elif tipo_usuario == "medico":
                 especialidad = datos[4]
@@ -72,7 +72,11 @@ try:
                 VALUES ((SELECT id FROM usuario WHERE correo = %s), %s)
                 """, (correo, especialidad))
                 conn.commit()
-                print("Usuario médico registrado correctamente.")
+                print(" -Usuario médico registrado correctamente.")
+            
+            elif tipo_usuario == "admi":
+                
+                print(" -Usuario administrativo registrado correctamente.")
 
             else:
                 print("Tipo de usuario no válido")
@@ -85,7 +89,7 @@ try:
             sock.sendall(respuesta)
 
 finally:
-    print('Cerrando socket y conexión a la base de datos')
+    print(' Cerrando socket y conexión a la base de datos')
     sock.close()
     cursor.close()
     conn.close()

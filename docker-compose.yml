@@ -1,22 +1,22 @@
-version: '3.8'
+# version: '3.8'
 
 services:
-  postgres_db:
-    image: postgres:latest
-    container_name: postgres_db
-    environment:
-      POSTGRES_USER: carlos
-      POSTGRES_PASSWORD: 213207091
-      POSTGRES_DB: consultorio
-    ports:
-      - "6000:5432"
-    volumes:
-      - ./postgres_data:/var/lib/postgresql/data
-    restart: always
-
   soabus:
-    image: jrgiadach/soabus:v1
-    container_name: soabus
+    image: jrgiadach/soabus:v1  # Especifica la imagen del bus SOA
+    container_name: soabus       # Nombre del contenedor
     ports:
-      - "5000:5000"
-    restart: always
+      - "5000:5000"              # Mapea el puerto 5000 del contenedor al 5000 de tu máquina
+    restart: always              # Asegura que el contenedor se reinicie automáticamente si falla
+
+  postgres_db:
+    image: postgres:latest      # Usamos la imagen oficial de PostgreSQL
+    container_name: postgres_db # Nombre del contenedor
+    environment:
+      POSTGRES_USER: carlos     # Usuario de la base de datos
+      POSTGRES_PASSWORD: 213207091 # Contraseña del usuario
+      POSTGRES_DB: consultorio   # Nombre de la base de datos
+    ports:
+      - "6000:5432"             # Mapea el puerto 5432 (por defecto de PostgreSQL) al puerto 6000 de la máquina
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data  # Persistencia de datos en el volumen local './postgres_data'
+    restart: always             # Asegura que el contenedor se reinicie automáticamente si falla
