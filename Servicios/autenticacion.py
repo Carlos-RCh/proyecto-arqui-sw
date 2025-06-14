@@ -64,10 +64,10 @@ try:
 
             if usuario:
                 print(" -Acceso exitoso.")
-                respuesta = b'00033autenReceived|true|Acceso Exitoso'
+                respuesta = b'00033autenReceived|true'
             else:
                 print(" -Acceso denegado.")
-                respuesta = b'00035autenReceived|false|Acceso Denegado'
+                respuesta = b'00035autenReceived|false'
 
             sock.sendall(respuesta)  # Enviar la respuesta al cliente
 finally:

@@ -51,6 +51,18 @@ try:
 
             print(f" [ Servicio: {servicio}, Nombre: {nombre}, Correo: {correo}, Contraseña: {contrasena}, Tipo de Usuario: {tipo_usuario} ]")
 
+            # Verificar si el correo ya existe en la base de datos
+            cursor.execute("SELECT COUNT(*) FROM usuario WHERE correo = %s", (correo,))
+            count = cursor.fetchone()[0]
+
+            if count > 0:
+                # Si el correo ya existe, responder con un mensaje personalizado
+                print(" -Usuario ya existe. (respuesta personalizada aquí)")
+                respuesta = b'00019ruserCorreoYaExiste'
+                sock.sendall(respuesta)
+                continue  # Salir de esta iteración y esperar un nuevo intento
+
+            # Si el correo no existe, continuar con el registro del usuario
             cursor.execute("""
             INSERT INTO usuario (nombre, correo, contrasena, rol)
             VALUES (%s, %s, %s, %s)
@@ -78,18 +90,12 @@ try:
                 conn.commit()
                 print(" -Usuario administrativo registrado correctamente.")
 
-            else:
-                print("Tipo de usuario no válido")
-                otro = b'00013ruserNovalido'
-                sock.sendall()
-                continue
-
             # Confirmación
-            respuesta = b'00013ruserReceived'
+            respuesta = b'00020ruserUsuarioRegistro'
             sock.sendall(respuesta)
 
 finally:
-    print(' Cerrando socket y conexión a la base de datos')
+    print('Cerrando socket y conexión a la base de datos')
     sock.close()
     cursor.close()
     conn.close()
