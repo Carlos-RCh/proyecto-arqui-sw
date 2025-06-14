@@ -61,14 +61,22 @@ try:
 
             # Si el correo y la contraseña coinciden, obtiene un registro
             usuario = cursor.fetchone()  
-
+            
+            # preparar respuesta    
+            respuesta = b'auten'
+            
             if usuario:
-                print(" -Acceso exitoso.")
-                respuesta = b'00033autenReceived|true'
+                respuesta += b'AccesoConcedido|'
+                respuesta += b'true|'
+                respuesta += str(usuario[0]).encode()    
+                
             else:
-                print(" -Acceso denegado.")
-                respuesta = b'00035autenReceived|false'
-
+                respuesta += b'AccesoDenegado|'
+                respuesta += b'false|'
+            
+            numero = str(len(respuesta)).rjust(5, '0')
+            respuesta = numero.encode() + respuesta
+            
             sock.sendall(respuesta)  # Enviar la respuesta al cliente
 finally:
     print(' Cerrando socket y conexión a la base de datos')

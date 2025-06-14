@@ -52,11 +52,16 @@ try:
             if acceso_permitido:
                 while True:
                     opcion2 = input(" Opción 1) Agenda Medica, 2) Historia Clinica: ")
+                    
                     if opcion2 == "1":
-                        servicio = b'agmed'
-                        mensaje = servicio
-                        mensaje += input("Ingresa ID medico: ").encode()
-
+                       servicio = b'agmed'
+                       mensaje = servicio
+                       mensaje += input("Ingresa ID medico: ").encode() + b'|'  
+                       mensaje += input(" - Ingresa año: ").encode() + b'/'  
+                       mensaje += input(" - Ingresa mes: ").encode() + b'/' 
+                       mensaje += input(" - Ingresa dia ").encode() + b'|' 
+                       mensaje += input(" - Ingresa hora YY:ZZ: ").encode()  
+                       
                     elif opcion2 == "2":
                         servicio = b'hclin'
                         mensaje = servicio
