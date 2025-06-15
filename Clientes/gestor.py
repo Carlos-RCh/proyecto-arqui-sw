@@ -60,10 +60,11 @@ try:
                         accion = input(" ¿Deseas crear o eliminar médico? (crear/eliminar): ").strip().lower()
 
                         if accion == "eliminar":
+                            print(" Ingresar :")
                             servicio = b'guser'
                             mensaje = servicio
                             mensaje += b"eliminar|"
-                            id_medico = input(" - Ingresa ID del médico a eliminar: ").encode()
+                            id_medico = input(" - id_usuario médico a eliminar: ").encode()
                             mensaje += id_medico
                             
                         elif accion == "crear":
@@ -91,10 +92,11 @@ try:
                         accion = input("¿Deseas crear o eliminar administrador? (crear/eliminar): ").strip().lower()
             
                         if accion == "eliminar":
+                            print(" Ingresar :")
                             servicio = b'guser'
                             mensaje = servicio
                             mensaje += b"eliminar|"
-                            id_admin = input("Ingresa ID del administrador a eliminar: ").encode() + b'|'
+                            id_admin = input(" - id_usuario admin a eliminar: ").encode() + b'|'
                             mensaje += id_admin
                         
                         elif accion == "crear":

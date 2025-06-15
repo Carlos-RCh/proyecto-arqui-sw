@@ -8,15 +8,15 @@ sock.connect(bus_address)
 
 try:
     while True:
-        # Preguntar si el usuario desea registrarse o autenticarse
-        opcion = input("Opción 0) Salir 1) Registrar Usuario, 2) Autenticación: ")
+        print(" Opcion :")
+        opcion = input(" 0) Salir 1) Registrar Usuario, 2) Autenticación: ")
         
         if opcion == "0":
             print(" Saliendo del cliente paciente...")
             break  
         
         elif opcion == "1":
-            # Registro de Usuario
+            
             servicio = b'ruser'
             mensaje = servicio
             mensaje += input(" - Nombre: ").encode() + b'|'
@@ -92,19 +92,33 @@ try:
             # Si el acceso es exitoso, permitir el acceso a las opciones 3 y 4
             if acceso_permitido:
                 while True:
-                    opcion2 = input(" Opción 1) Agendar Cita, 2) 2) Notificar Cita : ")
+                    print(" --------------------------------------")
+                    opcion2 = input(" 1) Agendar Cita 2) Cancelar Cita 3) Ver Horarios  4) Notificar Cita : ")
 
                     if opcion2 == "1":
+                        print(" Ingresa:")
                         servicio = b'gcita'
                         mensaje = servicio
-                        mensaje += input("Ingresa ID cliente: ").encode() + b'|'  
-                        mensaje += input("Ingresa ID medico: ").encode() + b'|'  
-                        mensaje += input(" - Ingresa año: ").encode() + b'/'  
-                        mensaje += input(" - Ingresa mes: ").encode() + b'/' 
-                        mensaje += input(" - Ingresa dia ").encode() + b'|' 
-                        mensaje += input(" - Ingresa hora YY:ZZ: ").encode()  
-
+                        mensaje += b'crear|'
+                        mensaje += input(" - id_usuario cliente: ").encode() + b'|'  
+                        mensaje += input(" - id_usuario medico: ").encode() + b'|'  
+                        mensaje += input(" - mes/dia ").encode() + b'|'  
+                        mensaje += input(" - horario AA:BB-XX:YY ").encode()  
+                    
                     elif opcion2 == "2":
+                        servicio = b'gcita'
+                        mensaje = servicio
+                        mensaje += b'cancelar|'    
+                        mensaje += input(" - id_cita : ").encode() 
+
+                    elif opcion2 == "3":
+                        print("Filtrado:")
+                        servicio = b'verho'
+                        mensaje = servicio
+                        mensaje += input(" - Especialidad (Cardiologia/Pediatria/Dermatologa/General): ").encode() + b'|'
+                        
+                        
+                    elif opcion2 == "4":
                         servicio = b'notif'
                         mensaje = servicio
                         mensaje += input(" - Ingresa ID de cita: ").encode() + b'|'

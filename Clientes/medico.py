@@ -11,8 +11,8 @@ sock.connect(bus_address)
 
 try:
     while True:
-        
-        opcion = input("Opción 0) Salir 1) Autenticación: ")    
+        print(" Opcion :")
+        opcion = input(" 0) Salir 1) Autenticación : ")    
 
         if opcion == "0":
             print(" Saliendo del cliente medico...")
@@ -55,14 +55,16 @@ try:
             
             if acceso_permitido:
                 while True:
-                    opcion2 = input(" Opción 1) Agenda Medica, 2) Historia Clinica: ")
+                    print(" --------------------------------------")                                
+                    opcion2 = input(" 1) Agenda Medica, 2) Historia Clinica : ")
                     
                     if opcion2 == "1":
+                       input(" Ingresa:")  
                        servicio = b'agmed'
                        mensaje = servicio
-                       mensaje += input("Ingresa ID medico: ").encode() + b'|'  
-                       mensaje += input(" - Ingresa mes/dia ").encode() + b'|'  
-                       mensaje += input(" - Ingresa horario AA:BB-XX:YY ").encode()  
+                       mensaje += input(" - id_usuario medico: ").encode() + b'|'  
+                       mensaje += input(" - mes/dia ").encode() + b'|'  
+                       mensaje += input(" - horario AA:BB-XX:YY ").encode()  
                        
                     elif opcion2 == "2":
                         servicio = b'hclin'

@@ -1,7 +1,6 @@
 import socket
 import sys
 import psycopg2
-import json
 
 # Crear un socket TCP/IP
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -23,7 +22,7 @@ cursor = conn.cursor()
 
 try:
     # Enviar mensaje de inicio para iniciar el servicio de gestión de citas
-    message = b'00010sinitgcitas'
+    message = b'00010sinitgcita'
     print('Enviando {!r}'.format(message))
     sock.sendall(message)
     
@@ -48,44 +47,111 @@ try:
             mensaje = data.decode()
             servicio = mensaje[:5]  # 'gcita'
             datos = mensaje[5:].split('|')
+            # Guardar si crear o cancelar cita
+            accion = datos[0] 
+    
+            if accion == 'cancelar': # Cancelar cita
+                id_cita = datos[1]
 
-            # Extraer los datos
-            id_cliente = datos[0]
-            id_medico = datos[1]
-            fecha = datos[2]
-            hora = datos[3]
+                # Buscar la cita con el id_cita y obtener el id_horario asociado
+                cursor.execute("SELECT id_horario FROM cita WHERE id = %s", (id_cita,))
+                resultado_cita = cursor.fetchone()
 
-            print(f"Recibido - ID Cliente: {id_cliente}, ID Médico: {id_medico}, Fecha: {fecha}, Hora: {hora}")
+                if resultado_cita:
+                    id_horario = resultado_cita[0]
+                    
+                    # Actualizar el estado de la cita a 'cancelada'
+                    cursor.execute("""
+                    UPDATE cita
+                    SET estado = 'cancelada'
+                    WHERE id = %s
+                    """, (id_cita,))
+
+                    # Actualizar el estado de disponible a TRUE en la tabla horario
+                    cursor.execute("""
+                    UPDATE horario
+                    SET disponible = TRUE
+                    WHERE id = %s
+                    """, (id_horario,))
+
+                    conn.commit()  # Guardar cambios en la base de datos
+                    respuesta = b'00014gcitaCancelada'
+                    sock.sendall(respuesta)
+                else:
+                    respuesta = b'00015gcitaErrorCancelacion'
+                    sock.sendall(respuesta)
+                continue
+
+                  
+            # Crear Citas y  Extraer los datos
+            id_usuario_paciente = datos[1]
+            id_usuario_medico = datos[2]
+            fecha = datos[3]
+            horario = datos[4]            
+            
+            print(f"Recibido - ID Usuario Cliente : {id_usuario_paciente}, ID Usuario Médico: {id_usuario_medico}, Fecha: {fecha}, Hora: {horario}")
 
             # Verificar si el médico existe
-            cursor.execute("SELECT COUNT(*) FROM medico WHERE id_usuario = %s", (id_medico,))
-            count = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM medico WHERE id_usuario = %s", (id_usuario_medico,))
+            count_medico = cursor.fetchone()[0]
+            id_medico = count_medico
+            # Verificar si el paciente existe
+            cursor.execute("SELECT COUNT(*) FROM paciente WHERE id_usuario = %s", (id_usuario_paciente,))
+            count_paciente = cursor.fetchone()[0]
+            id_paciente = count_paciente
+            
+            
+            if count_medico > 0 and count_paciente > 0:  # Si ambos existen
+                # Verificar si existe el horario en la tabla horario y si está disponible
+                cursor.execute("""
+                SELECT id, disponible FROM horario 
+                WHERE id_medico = %s AND fecha = %s AND horario = %s
+                """, (id_medico, fecha, horario))
+                horario_resultado = cursor.fetchone()
 
-            if count > 0:  # Si el médico existe, verificar horarios disponibles
-                # Extraer el horario y verificar si ya está disponible
-                # Separa la fecha y hora
-                fecha_hora = {
-                    'fecha': fecha,
-                    'hora': hora
-                }
-                # Convertir la fecha y hora a formato JSON
-                horario_json = json.dumps(fecha_hora)
+                if horario_resultado:  # Si el horario existe
+                    id_horario, disponible = horario_resultado
 
-                # Verificar si el horario ya existe en los horarios disponibles del médico
-                cursor.execute("SELECT horarios_disponibles FROM medico WHERE id_usuario = %s", (id_medico,))
-                result = cursor.fetchone()
+                    if disponible:  # Si está disponible
+                        # Crear la cita en la tabla cita
+                        estado = 'confirmada'
+                        cursor.execute("""
+                        INSERT INTO cita (id_horario, estado, id_paciente, id_medico)
+                        VALUES (%s, %s, %s ,%s)
+                        """, (id_horario, estado, id_paciente, id_medico))
+                        
+                        cursor.execute("SELECT id FROM cita WHERE id_horario = %s AND id_paciente = %s AND id_medico = %s", (id_horario, id_paciente, id_medico))
+                        cita = cursor.fetchone()  # Obtenemos la cita recién creada
+                        
+                        # Actualizar el estado de disponible a FALSE en la tabla horario
+                        cursor.execute("""
+                        UPDATE horario
+                        SET disponible = FALSE
+                        WHERE id = %s
+                        """, (id_horario,))
 
-                if result and result[0]:
-                    
-
+                        conn.commit()
+                        
+                        respuesta = b'gcitaExitoso|'
+                        respuesta += str(cita[0]).encode()        
+                        numero = str(len(respuesta)).rjust(5, '0')
+                        respuesta = numero.encode() + respuesta
+                        sock.sendall(respuesta)
+                    else:
+                        
+                        respuesta = b'00024gcitaHorarioNoDisponible'
+                        sock.sendall(respuesta)
                 else:
                     
-
+                    respuesta = b'00020gcitaHorarioNoExiste'
+                    sock.sendall(respuesta)
             else:
-                # Si el médico no existe, enviar respuesta de fallo
-                print(" - El médico no existe.")
-                respuesta = b'00018gcitasFallo'
+                respuesta = b'00010gcitaFallo'
                 sock.sendall(respuesta)
+            
+            
+            
+            # jjj
 
 finally:
     print('Cerrando socket y conexión a la base de datos')
