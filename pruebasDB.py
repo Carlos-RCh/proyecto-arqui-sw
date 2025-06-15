@@ -1,6 +1,6 @@
 import psycopg2
 
-# Conexión a la base de datos
+# Conectar a la base de datos
 conn = psycopg2.connect(
     dbname="consultorio",
     user="carlos",
@@ -10,37 +10,44 @@ conn = psycopg2.connect(
 )
 cursor = conn.cursor()
 
-# Solicitar el id_usuario del médico
-id_usuario = 4
+try:
+    # ID del usuario (Carlos Ruiz)
+    id_usuario = 1  # Suponiendo que el ID de usuario es 1 para "Carlos Ruiz"
 
-# Obtener el id_medico usando el id_usuario
-cursor.execute("SELECT id FROM medico WHERE id_usuario = %s", (id_usuario,))
-id_medico = cursor.fetchone()
-
-if id_medico:
-    id_medico = id_medico[0]
-    print(f"ID Médico: {id_medico}")
-    
-    # Obtener todos los horarios del médico (sin importar el estado de disponibilidad)
+    # Obtener el id_paciente del usuario
     cursor.execute("""
-    SELECT fecha, horario, disponible 
-    FROM horario 
-    WHERE id_medico = %s
-    """, (id_medico,))
-    
-    horarios = cursor.fetchall()
-    
-    # Mostrar los horarios
-    if horarios:
-        print("Horarios registrados para el médico:")
-        for horario in horarios:
-            estado = "Disponible" if horario[2] else "No disponible"  # Esto es solo informativo
-            print(f"Fecha: {horario[0]}, Hora: {horario[1]}, Estado: {estado}")
-    else:
-        print("No hay horarios registrados para este médico.")
-else:
-    print("El médico con este id_usuario no existe.")
+    SELECT id FROM paciente WHERE id_usuario = %s
+    """, (id_usuario,))
+    id_paciente = cursor.fetchone()
 
-# Cerrar la conexión
-cursor.close()
-conn.close()
+    if id_paciente:
+        id_paciente = id_paciente[0]  # Extraer el id_paciente
+        print(f"ID del paciente: {id_paciente}")
+
+        # Insertar tres casos de historia clínica para el paciente
+        cursor.execute("""
+        INSERT INTO historia_clinica (id_paciente, diagnostico, tratamiento)
+        VALUES (%s, %s, %s)
+        """, (id_paciente, 'gripe', 'reposo'))
+
+        cursor.execute("""
+        INSERT INTO historia_clinica (id_paciente, diagnostico, tratamiento)
+        VALUES (%s, %s, %s)
+        """, (id_paciente, 'dolor de cabeza', 'analgésicos'))
+
+        cursor.execute("""
+        INSERT INTO historia_clinica (id_paciente, diagnostico, tratamiento)
+        VALUES (%s, %s, %s)
+        """, (id_paciente, 'fiebre', 'paracetamol'))
+
+        # Confirmar los cambios
+        conn.commit()
+
+        print("3 casos de historia clínica creados para el paciente con ID:", id_paciente)
+    else:
+        print("No se encontró el paciente con el id_usuario:", id_usuario)
+
+finally:
+    # Cerrar conexión
+    cursor.close()
+    conn.close()

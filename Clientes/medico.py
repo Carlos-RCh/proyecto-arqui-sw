@@ -56,10 +56,10 @@ try:
             if acceso_permitido:
                 while True:
                     print(" --------------------------------------")                                
-                    opcion2 = input(" 1) Agenda Medica, 2) Historia Clinica : ")
+                    opcion2 = input(" 1) Agenda Medica, 2) Ver Historia Clinica 3) Crear Historia Clinica : ")
                     
                     if opcion2 == "1":
-                       input(" Ingresa:")  
+                       input(" Ingresa :")  
                        servicio = b'agmed'
                        mensaje = servicio
                        mensaje += input(" - id_usuario medico: ").encode() + b'|'  
@@ -67,9 +67,21 @@ try:
                        mensaje += input(" - horario AA:BB-XX:YY ").encode()  
                        
                     elif opcion2 == "2":
-                        servicio = b'hclin'
+                        print(" Ingresar :")
+                        servicio = b'hclin' 
                         mensaje = servicio
-                        mensaje += input("Ingresa id paciente: ").encode()
+                        mensaje +=  b'ver|' 
+                        mensaje += input("id_usuario de paciente: ").encode()
+                        
+                    elif opcion2 == "3":    
+                        print(" Ingresar :") 
+                        servicio = b'hclin' 
+                        mensaje = servicio
+                        mensaje +=  b'crear|' 
+                        mensaje += input("id_usuario de paciente: ").encode() + b'|'
+                        mensaje += input("Diagnostico : ").encode() + b'|'
+                        mensaje += input("Tratamiento : ").encode() 
+                        
 
                     else:
                         print(" Opción inválida !")

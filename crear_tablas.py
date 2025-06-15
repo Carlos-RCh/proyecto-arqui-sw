@@ -78,11 +78,10 @@ print("Tabla 'cita' creada")
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS historia_clinica (
     id SERIAL PRIMARY KEY,
-    id_cita INTEGER NOT NULL,
+    id_paciente INTEGER NOT NULL,
     diagnostico TEXT,
     tratamiento TEXT,
-    observaciones TEXT,
-    FOREIGN KEY (id_cita) REFERENCES cita(id) ON DELETE CASCADE
+    FOREIGN KEY (id_paciente) REFERENCES paciente(id) ON DELETE CASCADE
 );
 """)
 print("Tabla 'historia_clinica' creada")
