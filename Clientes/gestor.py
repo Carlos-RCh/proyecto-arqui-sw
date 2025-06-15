@@ -10,9 +10,13 @@ sock.connect(bus_address)
 try:
     while True:
 
-        opcion = input("Opción 1) Autenticación: ")    
+        opcion = input("Opción 0) Salir 1) Autenticación: ")    
         
-        if opcion == "1":
+        if opcion == "0":
+            print(" Saliendo del cliente gestor...")
+            break  
+        
+        elif opcion == "1":
             # Autenticación de Usuario
             servicio = b'auten'
             mensaje = servicio

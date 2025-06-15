@@ -9,9 +9,13 @@ sock.connect(bus_address)
 try:
     while True:
         # Preguntar si el usuario desea registrarse o autenticarse
-        opcion = input("Opción 1) Registrar Usuario, 2) Autenticación: ")
+        opcion = input("Opción 0) Salir 1) Registrar Usuario, 2) Autenticación: ")
         
-        if opcion == "1":
+        if opcion == "0":
+            print(" Saliendo del cliente paciente...")
+            break  
+        
+        elif opcion == "1":
             # Registro de Usuario
             servicio = b'ruser'
             mensaje = servicio
@@ -88,15 +92,17 @@ try:
             # Si el acceso es exitoso, permitir el acceso a las opciones 3 y 4
             if acceso_permitido:
                 while True:
-                    opcion2 = input(" Opción 1) Agendar Cita, 2) Notificar Cita : ")
+                    opcion2 = input(" Opción 1) Agendar Cita, 2) 2) Notificar Cita : ")
 
                     if opcion2 == "1":
                         servicio = b'gcita'
                         mensaje = servicio
-                        mensaje += input(" - Ingresa id paciente: ").encode() + b'|'
-                        mensaje += input(" - Ingresa id medico: ").encode() + b'|'
-                        mensaje += input(" - Ingresa fecha xx/xx/xx: ").encode() + b'|'
-                        mensaje += input(" - Ingresa hora YY:ZZ: ").encode()
+                        mensaje += input("Ingresa ID cliente: ").encode() + b'|'  
+                        mensaje += input("Ingresa ID medico: ").encode() + b'|'  
+                        mensaje += input(" - Ingresa año: ").encode() + b'/'  
+                        mensaje += input(" - Ingresa mes: ").encode() + b'/' 
+                        mensaje += input(" - Ingresa dia ").encode() + b'|' 
+                        mensaje += input(" - Ingresa hora YY:ZZ: ").encode()  
 
                     elif opcion2 == "2":
                         servicio = b'notif'

@@ -1,7 +1,6 @@
 import socket
 import sys
 import psycopg2
-import json
 
 # Crear un socket TCP/IP
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -49,60 +48,43 @@ try:
             datos = mensaje[5:].split('|')
             
             # Extraer los datos
-            id_medico = datos[0]
+            id_usuario = datos[0]
             fecha = datos[1]
             hora = datos[2]
 
-            print(f" Recibido - ID Médico: {id_medico}, Fecha: {fecha}, Hora: {hora}")
+            print(f" Recibido - ID Usuario: {id_usuario}, Fecha: {fecha}, Hora: {hora}")
 
             # Verificar si el médico existe
-            cursor.execute("SELECT COUNT(*) FROM medico WHERE id_usuario = %s", (id_medico,))
+            cursor.execute("SELECT COUNT(*) FROM medico WHERE id_usuario = %s", (id_usuario,))
             count = cursor.fetchone()[0]
             
-            if count > 0:  # Si el médico existe, actualizamos los horarios disponibles
+            if count > 0:  # Si el médico existe
                 
-                horario = {
-                    'fecha': fecha,
-                    'hora': hora
-                }
-                # Convertir el horario a formato JSON
-                horario_json = json.dumps(horario)
-
-                # Obtener los horarios actuales (si existen)
-                cursor.execute("SELECT horarios_disponibles FROM medico WHERE id_usuario = %s", (id_medico,))
-                result = cursor.fetchone()
-
-                if result and result[0]:
-                    # Verificar si el dato es ya una lista o no
-                    if isinstance(result[0], str):
-                        # Si el valor es un string, convertimos a lista
-                        horarios_existentes = json.loads(result[0])
-                    elif isinstance(result[0], list):
-                        # Si ya es una lista, usamos la lista directamente
-                        horarios_existentes = result[0]
-                    else:
-                        # Si el valor no es ni un string ni lista, inicializamos una lista vacía
-                        horarios_existentes = []
-                else:
-                    # Si no existen horarios, inicializamos una nueva lista
-                    horarios_existentes = []
-
-                # Agregar el nuevo horario a la lista de horarios existentes
-                horarios_existentes.append(horario)
-
-                # Actualizar la columna 'horarios_disponibles' con la lista completa de horarios
+                id_medico = count  # obtengo id PK de la tabla medico
+                # Verificar si ya existe un horario para ese médico con la misma fecha y hora
                 cursor.execute("""
-                    UPDATE medico
-                    SET horarios_disponibles = %s
-                    WHERE id_usuario = %s
-                """, (json.dumps(horarios_existentes), id_medico))
+                SELECT COUNT(*) FROM horario 
+                WHERE id_medico = %s AND fecha = %s AND horario = %s
+                """, (id_medico, fecha, hora))
 
-                conn.commit()
-                print(" - Registro de horarios médicos actualizado correctamente.")
-                
-                # Enviar respuesta de éxito
-                respuesta = b'00020agmedRegistroExitoso'
-                sock.sendall(respuesta)
+                horario_existente = cursor.fetchone()[0]
+
+                if horario_existente == 0:  # Si no existe, insertamos el nuevo horario
+                    cursor.execute("""
+                    INSERT INTO horario (id_medico, fecha, horario, disponible)
+                    VALUES (%s, %s, %s, TRUE)
+                    """, (id_medico, fecha, hora))
+
+                    conn.commit()
+                    print(" - Nuevo horario creado para el médico.")
+                    # Enviar respuesta de éxito
+                    respuesta = b'00020agmedRegistroExitoso'
+                    sock.sendall(respuesta)
+                else:
+                    print(" - El horario ya existe para el médico en esa fecha y hora.")
+                    respuesta = b'00021agmedHorarioExistente'
+                    sock.sendall(respuesta)
+
             else:
                 # Si el médico no existe, enviar mensaje de fallo
                 print(" - El médico no existe.")

@@ -15,7 +15,7 @@ cur = conn.cursor()
 cur.execute("""
     INSERT INTO usuario (nombre, correo, contrasena, rol)
     VALUES (%s, %s, %s, %s)
-""", ('Gestor1', 'Gestor1@mail', '123', 'gestor'))
+""", ('gestor', 'gestor@mail', '123', 'gestor'))
 
 # Confirmar los cambios
 conn.commit()
@@ -24,4 +24,4 @@ conn.commit()
 cur.close()
 conn.close()
 
-print("Usuario 'Gestor1' insertado correctamente.")
+print("Usuario 'gestor' insertado correctamente.")
