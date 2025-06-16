@@ -26,7 +26,7 @@ python3 crear_tablas.py
 ```
 
 ### 3. Levantar los servicios
-Para levantar todos los servicios del sistemas manera simultanea, en la raiz del proyecto debes ejecutar el siguiente comando por terminal:
+Para levantar todos los servicios del sistema manera simultanea, en la raiz del proyecto debes ejecutar el siguiente comando por terminal:
 
 ```bash
 python3 run_servicios.py
