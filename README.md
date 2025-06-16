@@ -24,6 +24,7 @@ Si es la primera vez que usas el sistema, necesitarás crear las tablas en la ba
 ```bash
 python3 crear_tablas.py
 ```
+
 ### 3. Levantar los servicios
 Para levantar todos los servicios del sistemas manera simultanea, en la raiz del proyecto debes ejecutar el siguiente comando por terminal:
 
