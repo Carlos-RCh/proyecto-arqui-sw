@@ -19,14 +19,19 @@ docker-compose up -d
 ```
 
 ### 2. Crear las tablas en la base de datos (si es la primera vez que usas el sistema)
-Si es la primera vez que usas el sistema, necesitarás crear las tablas en la base de datos. Para hacerlo, ejecuta el siguiente comando en la terminal:
+Si es la primera vez que usas el sistema, necesitarás crear las tablas en la base de datos desde la raiz del proyecto. Para hacerlo, ejecuta el siguiente comando en la terminal:
 
 ```bash
 python3 crear_tablas.py
 ```
+### 3. Levantar los servicios
+Para levantar todos los servicios del sistemas manera simultanea, en la raiz del proyecto debes ejecutar el siguiente comando por terminal:
 
+```bash
+python3 run_servicios.py
+```
 
-### 3. Detener el sistema
+### 4. Detener el sistema
 Cuando termines de trabajar con el sistema, puedes detenerlo de manera segura con el siguiente comando:
 ```bash
 docker-compose down
