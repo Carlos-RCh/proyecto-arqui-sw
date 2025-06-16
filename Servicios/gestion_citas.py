@@ -82,7 +82,6 @@ try:
                     sock.sendall(respuesta)
                 continue
 
-                  
             # Crear Citas y  Extraer los datos
             id_usuario_paciente = datos[1]
             id_usuario_medico = datos[2]
@@ -91,67 +90,68 @@ try:
             
             print(f"Recibido - ID Usuario Cliente : {id_usuario_paciente}, ID Usuario Médico: {id_usuario_medico}, Fecha: {fecha}, Hora: {horario}")
 
-            # Verificar si el médico existe
-            cursor.execute("SELECT COUNT(*) FROM medico WHERE id_usuario = %s", (id_usuario_medico,))
-            count_medico = cursor.fetchone()[0]
-            id_medico = count_medico
-            # Verificar si el paciente existe
-            cursor.execute("SELECT COUNT(*) FROM paciente WHERE id_usuario = %s", (id_usuario_paciente,))
-            count_paciente = cursor.fetchone()[0]
-            id_paciente = count_paciente
+            # Verificar si el médico existe y obtener su id_medico
+            cursor.execute("SELECT id FROM medico WHERE id_usuario = %s", (id_usuario_medico,))
+            medico = cursor.fetchone()
             
-            
-            if count_medico > 0 and count_paciente > 0:  # Si ambos existen
-                # Verificar si existe el horario en la tabla horario y si está disponible
-                cursor.execute("""
-                SELECT id, disponible FROM horario 
-                WHERE id_medico = %s AND fecha = %s AND horario = %s
-                """, (id_medico, fecha, horario))
-                horario_resultado = cursor.fetchone()
+            if medico:  # Si el médico existe
+                id_medico = medico[0]  # Obtenemos el id del médico
+                
+                # Verificar si el paciente existe y obtener su id_paciente
+                cursor.execute("SELECT id FROM paciente WHERE id_usuario = %s", (id_usuario_paciente,))
+                paciente = cursor.fetchone()
+                
+                if paciente:  # Si el paciente existe
+                    id_paciente = paciente[0]
+                    
+                    # Verificar si existe el horario en la tabla horario y si está disponible
+                    cursor.execute("""
+                    SELECT id, disponible FROM horario 
+                    WHERE id_medico = %s AND fecha = %s AND horario = %s
+                    """, (id_medico, fecha, horario))
+                    horario_resultado = cursor.fetchone()
 
-                if horario_resultado:  # Si el horario existe
-                    id_horario, disponible = horario_resultado
+                    if horario_resultado:  # Si el horario existe
+                        id_horario, disponible = horario_resultado
 
-                    if disponible:  # Si está disponible
-                        # Crear la cita en la tabla cita
-                        estado = 'confirmada'
-                        cursor.execute("""
-                        INSERT INTO cita (id_horario, estado, id_paciente, id_medico)
-                        VALUES (%s, %s, %s ,%s)
-                        """, (id_horario, estado, id_paciente, id_medico))
-                        
-                        cursor.execute("SELECT id FROM cita WHERE id_horario = %s AND id_paciente = %s AND id_medico = %s", (id_horario, id_paciente, id_medico))
-                        cita = cursor.fetchone()  # Obtenemos la cita recién creada
-                        
-                        # Actualizar el estado de disponible a FALSE en la tabla horario
-                        cursor.execute("""
-                        UPDATE horario
-                        SET disponible = FALSE
-                        WHERE id = %s
-                        """, (id_horario,))
+                        if disponible:  # Si está disponible
+                            # Crear la cita en la tabla cita
+                            estado = 'confirmada'
+                            cursor.execute("""
+                            INSERT INTO cita (id_horario, estado, id_paciente, id_medico)
+                            VALUES (%s, %s, %s ,%s)
+                            """, (id_horario, estado, id_paciente, id_medico))
+                            
+                            cursor.execute("SELECT id FROM cita WHERE id_horario = %s AND id_paciente = %s AND id_medico = %s", (id_horario, id_paciente, id_medico))
+                            cita = cursor.fetchone()  # Obtenemos la cita recién creada
+                            
+                            # Actualizar el estado de disponible a FALSE en la tabla horario
+                            cursor.execute("""
+                            UPDATE horario
+                            SET disponible = FALSE
+                            WHERE id = %s
+                            """, (id_horario,))
 
-                        conn.commit()
-                        
-                        respuesta = b'gcitaExitoso|'
-                        respuesta += str(cita[0]).encode()        
-                        numero = str(len(respuesta)).rjust(5, '0')
-                        respuesta = numero.encode() + respuesta
-                        sock.sendall(respuesta)
+                            conn.commit()
+                            
+                            respuesta = b'gcitaExitoso|'
+                            respuesta += str(cita[0]).encode()        
+                            numero = str(len(respuesta)).rjust(5, '0')
+                            respuesta = numero.encode() + respuesta
+                            sock.sendall(respuesta)
+                        else:
+                            respuesta = b'00024gcitaHorarioNoDisponible'
+                            sock.sendall(respuesta)
                     else:
-                        
-                        respuesta = b'00024gcitaHorarioNoDisponible'
+                        respuesta = b'00020gcitaHorarioNoExiste'
                         sock.sendall(respuesta)
                 else:
-                    
-                    respuesta = b'00020gcitaHorarioNoExiste'
+                    respuesta = b'00010gcitaFallo'
                     sock.sendall(respuesta)
+            
             else:
                 respuesta = b'00010gcitaFallo'
                 sock.sendall(respuesta)
-            
-            
-            
-            # jjj
 
 finally:
     print('Cerrando socket y conexión a la base de datos')

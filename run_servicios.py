@@ -8,9 +8,7 @@ servicios = [
     "gestion_citas.py",
     "gestion_usuarios.py",
     "historia_clinica.py",
-    "notificacion.py",
-    "registro_usuario.py",
-    "reporte.py"
+    "registro_usuario.py"
 ]
 
 for servicio in servicios:

@@ -55,12 +55,11 @@ try:
             print(f" Recibido - ID Usuario: {id_usuario}, Fecha: {fecha}, Hora: {hora}")
 
             # Verificar si el médico existe
-            cursor.execute("SELECT COUNT(*) FROM medico WHERE id_usuario = %s", (id_usuario,))
-            count = cursor.fetchone()[0]
+            cursor.execute("SELECT id FROM medico WHERE id_usuario = %s", (id_usuario,))
+            medico = cursor.fetchone()
             
-            if count > 0:  # Si el médico existe
-                
-                id_medico = count  # obtengo id PK de la tabla medico
+            if medico:  # Si el médico existe
+                id_medico = medico[0]  # Aquí estamos obteniendo el id del médico 
                 # Verificar si ya existe un horario para ese médico con la misma fecha y hora
                 cursor.execute("""
                 SELECT COUNT(*) FROM horario 
@@ -70,6 +69,7 @@ try:
                 horario_existente = cursor.fetchone()[0]
 
                 if horario_existente == 0:  # Si no existe, insertamos el nuevo horario
+                    
                     cursor.execute("""
                     INSERT INTO horario (id_medico, fecha, horario, disponible)
                     VALUES (%s, %s, %s, TRUE)

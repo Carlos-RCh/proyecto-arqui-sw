@@ -96,7 +96,6 @@ try:
                     opcion2 = input(" 1) Agendar Cita 2) Cancelar Cita 3) Ver Horarios  4) Notificar Cita : ")
 
                     if opcion2 == "1":
-                        print(" Ingresa:")
                         servicio = b'gcita'
                         mensaje = servicio
                         mensaje += b'crear|'
@@ -110,19 +109,12 @@ try:
                         mensaje = servicio
                         mensaje += b'cancelar|'    
                         mensaje += input(" - id_cita : ").encode() 
-
+                        
                     elif opcion2 == "3":
-                        print("Filtrado:")
-                        servicio = b'verho'
-                        mensaje = servicio
-                        mensaje += input(" - Especialidad (Cardiologia/Pediatria/Dermatologa/General): ").encode() + b'|'
-                        
-                        
-                    elif opcion2 == "4":
                         servicio = b'notif'
                         mensaje = servicio
-                        mensaje += input(" - Ingresa ID de cita: ").encode() + b'|'
-                        mensaje += input(" - Ingresa correo del paciente: ").encode()
+                        mensaje += input(" - Ingresa id_usuario paciente: ").encode() + b'|'
+                        mensaje += input(" - Ingresa id_cita: ").encode()
 
                     else:
                         print(" Opción inválida !")

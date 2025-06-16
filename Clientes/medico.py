@@ -59,7 +59,6 @@ try:
                     opcion2 = input(" 1) Agenda Medica, 2) Ver Historia Clinica 3) Crear Historia Clinica : ")
                     
                     if opcion2 == "1":
-                       input(" Ingresa :")  
                        servicio = b'agmed'
                        mensaje = servicio
                        mensaje += input(" - id_usuario medico: ").encode() + b'|'  
