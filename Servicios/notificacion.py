@@ -8,7 +8,7 @@ from email.mime.text import MIMEText
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Conectar al puerto 5000 donde está escuchando el servicio
-bus_address = ('localhost', 5000)
+bus_address = ('localhost', 5500)
 # print('Conectando a {} puerto {}'.format(*bus_address))
 sock.connect(bus_address)
 

@@ -3,7 +3,7 @@ import sys
 import os
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-bus_address = ('localhost', 5000)
+bus_address = ('localhost', 5500)
 #print('Conectando a {} puerto {}'.format(*bus_address))
 sock.connect(bus_address)
 

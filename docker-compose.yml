@@ -5,7 +5,7 @@ services:
     image: jrgiadach/soabus:v1  # Especifica la imagen del bus SOA
     container_name: soabus       # Nombre del contenedor
     ports:
-      - "5000:5000"              # Mapea el puerto 5000 del contenedor al 5000 de tu máquina
+      - "5500:5500"              # Mapea el puerto 5000 del contenedor al 5000 de tu máquina
     restart: always              # Asegura que el contenedor se reinicie automáticamente si falla
 
   postgres_db:

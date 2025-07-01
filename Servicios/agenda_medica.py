@@ -6,7 +6,7 @@ import psycopg2
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Conectar al puerto 5000 donde está escuchando el servicio
-bus_address = ('localhost', 5000)
+bus_address = ('localhost', 5500)
 sock.connect(bus_address)
 
 # Conectar a la base de datos

@@ -11,12 +11,7 @@ conn = psycopg2.connect(
 cursor = conn.cursor()
 
 
-# Eliminar tablas si existen,  
-# tablas = ['historia_clinica', 'cita', 'horario', 'medico', 'paciente', 'usuario']
-# for tabla in tablas:
-#     cursor.execute(f"DROP TABLE IF EXISTS {tabla} CASCADE;")
-
-
+cursor.execute("DROP SEQUENCE IF EXISTS usuario_id_seq CASCADE;")
 # Crear tabla usuario
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS usuario (

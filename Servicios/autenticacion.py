@@ -6,7 +6,7 @@ import sys
 import psycopg2
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-bus_address = ('localhost', 5000)  # Dirección del bus SOA
+bus_address = ('localhost', 5500)
 sock.connect(bus_address)
 
 # Conectar a la base de datos
