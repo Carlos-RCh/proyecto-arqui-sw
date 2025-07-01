@@ -7,7 +7,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Connect the socket to the port where the bus is listening
 bus_address = ('localhost', 5000)
-print('Conectando a {} puerto {}'.format(*bus_address))
+# print('Conectando a {} puerto {}'.format(*bus_address))
 sock.connect(bus_address)
 
 # Connect to the database
@@ -23,13 +23,13 @@ cursor = conn.cursor()
 try:
     # Send initial message to start the service
     message = b'00010sinitguser'
-    print('Enviando {!r}'.format(message))
+    #print('Enviando {!r}'.format(message))
     sock.sendall(message)
     sinit = 1
 
     while True:
         # Waiting for transaction
-        print(" [ Esperando transacción ... ]")
+        
         amount_received = 0
         amount_expected = int(sock.recv(5))
 
@@ -37,12 +37,15 @@ try:
             data = sock.recv(amount_expected - amount_received)
             amount_received += len(data)
 
-        print(" [ Procesando ... ]")
-        print(' -Mensaje recibido {!r}'.format(data))
+        
+        print("=" * 40)
+        print("       SERVICIO GESTION USUARIOS ")
+        
+        print(' \n Respuesta : [{!r}]'.format(data))
 
         if sinit == 1:
             sinit = 0
-            print(' -Recibido mensaje de inicio (sinit answer)')
+            print(" Mensaje (sinit answer): servicio OK")
         else:
             mensaje = data.decode()
             servicio = mensaje[:5]  # 'guser'
@@ -70,6 +73,8 @@ try:
                     respuesta = b'00015guserUsuarioNoEncontrado'
                     sock.sendall(respuesta)
 
+        print("=" * 40)
+        
 finally:
     print('Cerrando socket y conexión a la base de datos')
     sock.close()

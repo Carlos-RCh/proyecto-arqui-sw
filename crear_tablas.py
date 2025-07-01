@@ -10,6 +10,13 @@ conn = psycopg2.connect(
 )
 cursor = conn.cursor()
 
+
+# Eliminar tablas si existen,  
+# tablas = ['historia_clinica', 'cita', 'horario', 'medico', 'paciente', 'usuario']
+# for tabla in tablas:
+#     cursor.execute(f"DROP TABLE IF EXISTS {tabla} CASCADE;")
+
+
 # Crear tabla usuario
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS usuario (
@@ -20,7 +27,6 @@ CREATE TABLE IF NOT EXISTS usuario (
     rol TEXT NOT NULL CHECK (rol IN ('medico', 'paciente', 'administrativo', 'gestor'))
 );
 """)
-print("Tabla 'usuario' creada")
 
 # Crear tabla paciente
 cursor.execute("""
@@ -31,7 +37,6 @@ CREATE TABLE IF NOT EXISTS paciente (
     FOREIGN KEY (id_usuario) REFERENCES usuario(id) ON DELETE CASCADE
 );
 """)
-print("Tabla 'paciente' creada")
 
 # Crear tabla medico (sin 'horarios_disponibles')
 cursor.execute("""
@@ -42,7 +47,6 @@ CREATE TABLE IF NOT EXISTS medico (
     FOREIGN KEY (id_usuario) REFERENCES usuario(id) ON DELETE CASCADE
 );
 """)
-print("Tabla 'medico' creada")
 
 # Crear tabla horario con disponible como BOOLEAN
 cursor.execute("""
@@ -55,8 +59,6 @@ CREATE TABLE IF NOT EXISTS horario (
     FOREIGN KEY (id_medico) REFERENCES medico(id) ON DELETE CASCADE
 );
 """)
-print("Tabla 'horario' creada")
-
 
 # Crear tabla cita
 cursor.execute("""
@@ -71,8 +73,6 @@ CREATE TABLE IF NOT EXISTS cita (
     FOREIGN KEY (id_medico) REFERENCES medico(id) ON DELETE CASCADE
 );
 """)
-print("Tabla 'cita' creada")
-
 
 # Crear tabla historia_clinica
 cursor.execute("""
@@ -84,8 +84,6 @@ CREATE TABLE IF NOT EXISTS historia_clinica (
     FOREIGN KEY (id_paciente) REFERENCES paciente(id) ON DELETE CASCADE
 );
 """)
-print("Tabla 'historia_clinica' creada")
-
 
 # Consultar todas las tablas existentes en la base de datos
 cursor.execute("""
@@ -101,6 +99,82 @@ tablas = cursor.fetchall()
 print("Tablas creadas en la base de datos:")
 for tabla in tablas:
     print(tabla[0])
+
+
+# Verificar si la tabla usuario está vacía
+cursor.execute("SELECT COUNT(*) FROM usuario;")
+cantidad_usuarios = cursor.fetchone()[0]
+
+if cantidad_usuarios == 0:
+    # Crear usuarios de prueba
+    cursor.execute("""
+    INSERT INTO usuario (nombre, correo, contrasena, rol)
+    VALUES ('Gestor Sistema', 'gestor@gmail.com', '123', 'gestor');
+    """)
+    cursor.execute("""
+        INSERT INTO usuario (nombre, correo, contrasena, rol)
+        VALUES ('Carlos Ruiz', 'carlos@gmail.com', '123', 'medico');
+    """)
+    cursor.execute("""
+        INSERT INTO usuario (nombre, correo, contrasena, rol)
+        VALUES ('Nicolas Fernandez', 'nicolas@gmail.com', '123', 'medico');
+    """)
+    cursor.execute("""
+        INSERT INTO usuario (nombre, correo, contrasena, rol)
+        VALUES ('Luciano Zuñiga', 'luciano@gmail.com', '123', 'administrativo');
+    """)
+    cursor.execute("""
+        INSERT INTO usuario (nombre, correo, contrasena, rol)
+        VALUES ('Amanda Giovanini', 'amanda@gmail.com', '123', 'paciente');
+    """)
+    cursor.execute("""
+        INSERT INTO usuario (nombre, correo, contrasena, rol)
+        VALUES ('Jorge Gonzales', 'jorge@gmail.com', '123', 'paciente');
+    """)
+
+    # Insertar en tabla medico
+    cursor.execute("SELECT id FROM usuario WHERE rol = 'medico';")
+    medicos = cursor.fetchall()
+    for medico in medicos:
+        cursor.execute("""
+            INSERT INTO medico (id_usuario, especialidad)
+            VALUES (%s, %s);
+        """, (medico[0], 'General'))
+
+    # Insertar en tabla paciente
+    cursor.execute("SELECT id FROM usuario WHERE rol = 'paciente';")
+    pacientes = cursor.fetchall()
+    for paciente in pacientes:
+        cursor.execute("""
+            INSERT INTO paciente (id_usuario, seguro_medico)
+            VALUES (%s, %s);
+        """, (paciente[0], 'Fonasa'))
+
+    # Insertar horarios
+    cursor.execute("SELECT id FROM medico;")
+    medicos = cursor.fetchall()
+    for medico in medicos:
+        cursor.execute("""
+            INSERT INTO horario (id_medico, fecha, horario, disponible)
+            VALUES (%s, %s, %s, %s);
+        """, (medico[0], '01/06', '12:00', True))
+        cursor.execute("""
+            INSERT INTO horario (id_medico, fecha, horario, disponible)
+            VALUES (%s, %s, %s, %s);
+        """, (medico[0], '02/06', '14:00', True))
+
+    # Insertar historia clínica
+    cursor.execute("SELECT id FROM paciente;")
+    pacientes = cursor.fetchall()
+    for paciente in pacientes:
+        cursor.execute("""
+            INSERT INTO historia_clinica (id_paciente, diagnostico, tratamiento)
+            VALUES (%s, %s, %s);
+        """, (paciente[0], 'Alergia estacional', 'Antihistamínicos'))
+        cursor.execute("""
+            INSERT INTO historia_clinica (id_paciente, diagnostico, tratamiento)
+            VALUES (%s, %s, %s);
+        """, (paciente[0], 'Gastritis', 'Antiácidos,Dieta blanda'))
 
 
 # Confirmar y cerrar

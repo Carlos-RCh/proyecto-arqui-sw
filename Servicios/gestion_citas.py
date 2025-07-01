@@ -7,7 +7,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Conectar al puerto 5000 donde está escuchando el servicio
 bus_address = ('localhost', 5000)
-print('Conectando a {} puerto {}'.format(*bus_address))
+# print('Conectando a {} puerto {}'.format(*bus_address))
 sock.connect(bus_address)
 
 # Conectar a la base de datos
@@ -23,13 +23,13 @@ cursor = conn.cursor()
 try:
     # Enviar mensaje de inicio para iniciar el servicio de gestión de citas
     message = b'00010sinitgcita'
-    print('Enviando {!r}'.format(message))
+    # print('Enviando {!r}'.format(message))
     sock.sendall(message)
     
     sinit = 1
 
     while True:
-        print(" [ Esperando transacción ... ]")
+        
         amount_received = 0
         amount_expected = int(sock.recv(5))
 
@@ -37,12 +37,15 @@ try:
             data = sock.recv(amount_expected - amount_received)
             amount_received += len(data)
 
-        print(" [ Procesando ... ]")
-        print(' -Mensaje recibido {!r}'.format(data))
+        print("=" * 40)
+        print("       SERVICIO GESTION CITAS ")
+        
+        print(' \n Respuesta : [{!r}]'.format(data))
+    
 
         if sinit == 1:
             sinit = 0
-            print(' -Recibido mensaje de inicio (sinit answer)')
+            print(" Mensaje (sinit answer): servicio OK")
         else:
             mensaje = data.decode()
             servicio = mensaje[:5]  # 'gcita'
@@ -76,11 +79,51 @@ try:
 
                     conn.commit()  # Guardar cambios en la base de datos
                     respuesta = b'00014gcitaCancelada'
+                    print(' Enviando  : [{!r}]'.format(respuesta))
                     sock.sendall(respuesta)
                 else:
                     respuesta = b'00015gcitaErrorCancelacion'
+                    print(' Enviando  : [{!r}]'.format(respuesta))
                     sock.sendall(respuesta)
                 continue
+            
+            
+            elif accion == 'ver':
+                id_usuario_paciente = datos[1]
+
+                # Obtener id del paciente a partir del id_usuario
+                cursor.execute("SELECT id FROM paciente WHERE id_usuario = %s", (id_usuario_paciente,))
+                paciente = cursor.fetchone()
+
+                if paciente:
+                    id_paciente = paciente[0]
+                    # Obtener todas las citas del paciente, junto con fecha y hora del horario asociado
+                    cursor.execute("""
+                    SELECT c.id, h.fecha, h.horario
+                    FROM cita c
+                    JOIN horario h ON c.id_horario = h.id
+                    WHERE c.id_paciente = %s
+                    """, (id_paciente,))
+
+                    citas = cursor.fetchall()
+
+                    if citas:
+                        detalles = [f"{id_cita}-{fecha}-{hora}" for id_cita, fecha, hora in citas]
+                        mensaje = "true|" + "|".join(detalles)
+                    else:
+                        mensaje = "true|"
+
+                    # Preparar y enviar respuesta
+                    longitud = str(len(mensaje)).rjust(5, '0')
+                    respuesta = longitud.encode() + b'gcita' + mensaje.encode()
+                    print(" Enviando :", respuesta)
+                    sock.sendall(respuesta)
+                else:
+                    respuesta = b'00021gcitaPacienteNoExiste'
+                    print(' Enviando  : [{!r}]'.format(respuesta))
+                    sock.sendall(respuesta)
+                continue
+
 
             # Crear Citas y  Extraer los datos
             id_usuario_paciente = datos[1]
@@ -138,20 +181,27 @@ try:
                             respuesta += str(cita[0]).encode()        
                             numero = str(len(respuesta)).rjust(5, '0')
                             respuesta = numero.encode() + respuesta
+                            print(' Enviando  : [{!r}]'.format(respuesta))
                             sock.sendall(respuesta)
                         else:
                             respuesta = b'00024gcitaHorarioNoDisponible'
+                            print(' Enviando  : [{!r}]'.format(respuesta))
                             sock.sendall(respuesta)
                     else:
                         respuesta = b'00020gcitaHorarioNoExiste'
+                        print(' Enviando  : [{!r}]'.format(respuesta))
                         sock.sendall(respuesta)
                 else:
                     respuesta = b'00010gcitaFallo'
+                    print(' Enviando  : [{!r}]'.format(respuesta))
                     sock.sendall(respuesta)
             
             else:
                 respuesta = b'00010gcitaFallo'
+                print(' Enviando  : [{!r}]'.format(respuesta))
                 sock.sendall(respuesta)
+        
+        print("=" * 40)
 
 finally:
     print('Cerrando socket y conexión a la base de datos')

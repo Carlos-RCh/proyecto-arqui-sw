@@ -1,22 +1,32 @@
 import socket
 import sys
+import os
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 bus_address = ('localhost', 5000)
-print('Conectando a {} puerto {}'.format(*bus_address))
 sock.connect(bus_address)
 
 try:
     while True:
-        print(" Opcion :")
-        opcion = input(" 0) Salir 1) Registrar Usuario, 2) Autenticación: ")
+        os.system('cls' if os.name == 'nt' else 'clear')    
+        print("=" * 40)
+        print("       CLIENTE PACIENTE ")
+        print("=" * 40)
+        print(' [Conectando a {} puerto {}]'.format(*bus_address))
+        
+        print("\n MENÚ INICIO ")
+        print("-" * 30)
+        print(" 0) Salir")
+        print(" 1) Registrar Paciente")
+        print(" 2) Autenticación")
+        opcion = input(" Selecciona una opción: ")
         
         if opcion == "0":
-            print(" Saliendo del cliente paciente...")
+            print("\n Saliendo del paciente...")
             break  
         
         elif opcion == "1":
-            
+            print("\n--------- REGISTRO ---------")
             servicio = b'ruser'
             mensaje = servicio
             mensaje += input(" - Nombre: ").encode() + b'|'
@@ -24,7 +34,6 @@ try:
             mensaje += input(" - Contraseña: ").encode() + b'|'
             mensaje += b'paciente|'
 
-            # Validar seguro de salud
             while True:
                 seguro_salud = input(" - Seguro de Salud (Fonasa/Isapre/Privado/Ninguno): ").strip()
                 if seguro_salud in ['Fonasa', 'Isapre', 'Privado', 'Ninguno']:
@@ -32,14 +41,13 @@ try:
                     break
                 else:
                     print(" Opción inválida!")
-
-            # Enviar mensaje de registro
+            
+            
             numero = str(len(mensaje)).rjust(5, '0')
             mensaje = numero.encode() + mensaje
-            print('Enviando {!r}'.format(mensaje))
+            print('\n Enviando  : [{!r}]'.format(mensaje))
             sock.sendall(mensaje)
-
-            print(" [ Esperando transacción ... ]")
+            #print(" [ Esperando transacción ... ]")
             amount_received = 0
             amount_expected = int(sock.recv(5))
 
@@ -47,26 +55,22 @@ try:
                 data = sock.recv(amount_expected - amount_received)
                 amount_received += len(data)
 
-            print(" [ Verificando respuesta del servicio ... ]")
-            print(' Recibido {!r}'.format(data))
-            
-            # Después de registrar, vuelve a la pantalla principal
+            print(' Respuesta : [{!r}]'.format(data))
             continue
 
         elif opcion == "2":
-            # Autenticación de Usuario
+            print("\n------- AUTENTICACIÓN -------")
             servicio = b'auten'
             mensaje = servicio
-            mensaje += input(" - Ingresa correo: ").encode() + b'|'
-            mensaje += input(" - Ingresa contraseña: ").encode()
+            mensaje += input(" - Correo: ").encode() + b'|'
+            mensaje += input(" - Contraseña: ").encode() + b'|'
+            mensaje += b'paciente'
 
-            # Enviar mensaje de autenticación
             numero = str(len(mensaje)).rjust(5, '0')
             mensaje = numero.encode() + mensaje
-            print('Enviando {!r}'.format(mensaje))
+            print('\n Enviando  : [{!r}]'.format(mensaje))
             sock.sendall(mensaje)
-
-            print(" [ Esperando transacción ... ]")
+            #print(" [ Esperando transacción ... ]")
             amount_received = 0
             amount_expected = int(sock.recv(5))
 
@@ -74,43 +78,86 @@ try:
                 data = sock.recv(amount_expected - amount_received)
                 amount_received += len(data)
 
-            print(" [ Verificando respuesta del servicio ... ]")
-            print(' Recibido {!r}'.format(data))
+            print(' Respuesta : [{!r}]'.format(data))
             
             mensaje = data.decode()
             datos = mensaje.split('|')
 
             confirmacion = datos[1]
+            id = datos[2]
             if confirmacion == 'true':
-                print(" - Acceso exitoso.")
                 acceso_permitido = True
             else:
-                print(" - Acceso denegado.")
                 acceso_permitido = False
-                            
-            
-            # Si el acceso es exitoso, permitir el acceso a las opciones 3 y 4
-            if acceso_permitido:
-                while True:
-                    print(" --------------------------------------")
-                    opcion2 = input(" 1) Agendar Cita 2) Cancelar Cita 3) Ver Horarios  4) Notificar Cita : ")
 
-                    if opcion2 == "1":
+            
+            if acceso_permitido:
+                os.system('cls' if os.name == 'nt' else 'clear')         
+                while True:
+                    
+                    print("=" * 40)
+                    print("       CLIENTE PACIENTE ")
+                    print("=" * 40)
+                    print(' [Conectando a {} puerto {}]'.format(*bus_address))
+                    
+                    print(" \n MENÚ PRINCIPAL ")
+                    print(f" ID : {id}")
+                    print("-" * 28)
+                    print(" 0) Salir")
+                    print(" 1) Agendar Cita")
+                    print(" 2) Cancelar Cita")
+                    print(" 3) Ver Citas")
+                    print(" 4) Ver Horiarios")
+                    print(" 5) Notificar Cita")
+                    
+                    
+                    opcion2 = input(" Selecciona una opción: ")
+
+                    if opcion2 == "0":
+                        print(" Saliendo del menú del paciente...")
+                        break
+
+                    elif opcion2 == "1":
+                        print("\n------- Agendar Cita -------")
                         servicio = b'gcita'
                         mensaje = servicio
                         mensaje += b'crear|'
                         mensaje += input(" - id_usuario cliente: ").encode() + b'|'  
                         mensaje += input(" - id_usuario medico: ").encode() + b'|'  
-                        mensaje += input(" - mes/dia ").encode() + b'|'  
-                        mensaje += input(" - horario AA:BB-XX:YY ").encode()  
-                    
+                        mensaje += input(" - dia/mes: ").encode() + b'|'  
+                        mensaje += input(" - horario 'AA:BB' : ").encode()  
+
                     elif opcion2 == "2":
+                        print("\n------- Cancelar Cita -------")
                         servicio = b'gcita'
                         mensaje = servicio
                         mensaje += b'cancelar|'    
-                        mensaje += input(" - id_cita : ").encode() 
-                        
+                        mensaje += input(" - id_cita: ").encode() 
+                    
                     elif opcion2 == "3":
+                        print("\n------- Ver Citas -------")
+                        servicio = b'gcita'
+                        mensaje = servicio
+                        mensaje += b'ver|'    
+                        mensaje += input(" - id_usuario cliente: ").encode() + b'|'  
+                    
+                    elif opcion2 == "4":
+                        print("\n------- Ver Horarios -------")
+                        servicio = b'agmed'
+                        mensaje = servicio
+                        mensaje += input(" - id_usuario paciente: ").encode() + b'|'
+                        while True:
+                                especialidad = input(" - Especialidad (Cardiologia/Pediatria/Dermatologia/General): ").strip()
+                                if especialidad in ['Pediatria', 'Cardiologia', 'General', 'Dermatologia']:
+                                    mensaje += especialidad.encode()
+                                    break
+                                else:
+                                    print(" Opción inválida !")
+                                        
+                        mensaje += b'|x'  
+                        
+                    elif opcion2 == "5":
+                        print("\n------- Notificar Cita -------")
                         servicio = b'notif'
                         mensaje = servicio
                         mensaje += input(" - Ingresa id_usuario paciente: ").encode() + b'|'
@@ -120,36 +167,24 @@ try:
                         print(" Opción inválida !")
                         continue
 
-                    # Enviar mensaje de agendar o notificar cita
                     numero = str(len(mensaje)).rjust(5, '0')
                     mensaje = numero.encode() + mensaje
-                    print('Enviando {!r}'.format(mensaje))
+                    print('\n Enviando  : [{!r}]'.format(mensaje))
                     sock.sendall(mensaje)
 
-                    print(" [ Esperando transacción ... ]")
                     amount_received = 0
                     amount_expected = int(sock.recv(5))
 
                     while amount_received < amount_expected:
                         data = sock.recv(amount_expected - amount_received)
                         amount_received += len(data)
-
-                    print(" [ Verificando respuesta del servicio ... ]")
-                    print('Recibido {!r}'.format(data))
-
-                    # Salir del ciclo si el usuario decide no continuar
-                    continuar = input("¿Deseas continuar con otra opción? (y/n): ")
-                    if continuar.lower() != 'y':
-                        break
-
-            # Si no tiene acceso, volver al menú principal
-            else:
-                print(" Acceso denegado.")
-
+                    
+                    print(' Respuesta : [{!r}]'.format(data))
+                        
         else:
             print(" Opción inválida !")
             continue
 
 finally:
-    print('Cerrando socket')
+    print(" [Cerrando socket...]")
     sock.close()

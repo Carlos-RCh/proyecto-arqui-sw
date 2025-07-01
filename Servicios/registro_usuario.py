@@ -5,7 +5,7 @@ import psycopg2
 # Crear un socket TCP/IP
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 bus_address = ('localhost', 5000)
-print('Conectando a {} puerto {}'.format(*bus_address))
+#print('Conectando a {} puerto {}'.format(*bus_address))
 sock.connect(bus_address)
 
 # Conectar a la base de datos
@@ -21,24 +21,26 @@ cursor = conn.cursor()
 try:
     # Enviar mensaje de inicio
     message = b'00010sinitruser'
-    print('Enviando {!r}'.format(message))
+    #print('Enviando {!r}'.format(message))
     sock.sendall(message)
     
     sinit = 1
 
     while True:
-        print(" [ Esperando transacción ... ]")
+        
         amount_expected = int(sock.recv(5))
         data = b""
         while len(data) < amount_expected:
             data += sock.recv(amount_expected - len(data))
 
-        print(" [ Procesando ... ]")
-        print(' -Mensaje recibido {!r}'.format(data))
+        print("=" * 40)
+        print("       SERVICIO REGISTRO USUARIO ")
+        
+        print(' \n Respuesta : [{!r}]'.format(data))
 
         if sinit == 1:
             sinit = 0
-            print(' -Recibido mensaje de inicio (sinit answer)')
+            print(" Mensaje (sinit answer): servicio OK")
         else:
             mensaje = data.decode()
             servicio = mensaje[:5]
@@ -93,6 +95,8 @@ try:
             # Confirmación
             respuesta = b'00020ruserUsuarioRegistro'
             sock.sendall(respuesta)
+        
+        print("=" * 40)
 
 finally:
     print('Cerrando socket y conexión a la base de datos')

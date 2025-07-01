@@ -7,7 +7,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Conectar al puerto 5000 donde está escuchando el servicio
 bus_address = ('localhost', 5000)
-print('Conectando a {} puerto {}'.format(*bus_address))
+# print('Conectando a {} puerto {}'.format(*bus_address))
 sock.connect(bus_address)
 
 # Conectar a la base de datos
@@ -23,12 +23,12 @@ cursor = conn.cursor()
 try:
     # Enviar mensaje de inicio para iniciar el servicio de reporte
     message = b'00010sinitrepor'
-    print('Enviando {!r}'.format(message))
+    #print('Enviando {!r}'.format(message))
     sock.sendall(message)
     sinit = 1
 
     while True:
-        print(" [ Esperando transacción ... ]")
+        # print(" [ Esperando transacción ... ]")
         amount_received = 0
         amount_expected = int(sock.recv(5))
 
@@ -36,51 +36,66 @@ try:
             data = sock.recv(amount_expected - amount_received)
             amount_received += len(data)
 
-        print(" [ Procesando ... ]")
-        print(' -Mensaje recibido {!r}'.format(data))
+        print("=" * 40)
+        print("       SERVICIO REPORTE ")
+        
+        print(' \n Respuesta : [{!r}]'.format(data))
 
         if sinit == 1:
             sinit = 0
-            print(' -Recibido mensaje de inicio (sinit answer)')
+            print(' Mnesjae (sinit answer): servicio OK')
         else:
             mensaje = data.decode()
             servicio = mensaje[:5]  # 'repor'
             datos = mensaje[5:].split('|')
 
-            
-            filtro = datos[1]  # El filtro que se pasó (ej: 'Pediatria', 'Todos', etc.)
+            tipo_reporte = datos[0]  # 'medicos' o 'horarios'
+            filtro = datos[1]     
 
-            print(f"Filtro recibido: {filtro}")
+            if tipo_reporte == 'medicos':
+                if filtro == 'Todos':
+                    cursor.execute("SELECT id_usuario, especialidad FROM medico")
+                    medicos = cursor.fetchall()
+                else:
+                    cursor.execute("SELECT id_usuario, especialidad FROM medico WHERE especialidad = %s", (filtro,))
+                    medicos = cursor.fetchall()
 
-            if filtro == 'Todos':  # Si el filtro es 'Todos', obtener todos los médicos
-                cursor.execute("SELECT id_usuario, especialidad FROM medico")
-                medicos = cursor.fetchall()
-
-                # Preparar la respuesta
                 respuesta = b'repor|'
                 for medico in medicos:
                     id_usuario, especialidad = medico
                     respuesta += f"{id_usuario},{especialidad}|".encode()
 
-            else:  # Si el filtro es alguna especialidad específica
-                cursor.execute("""
-                    SELECT id_usuario, especialidad FROM medico
-                    WHERE especialidad = %s
-                """, (filtro,))
-                medicos = cursor.fetchall()
+            elif tipo_reporte == 'horarios':
+                id_usuario_medico = filtro
 
-                # Preparar la respuesta
-                respuesta = b'repor|'
-                for medico in medicos:
-                    id_usuario, especialidad = medico
-                    respuesta += f"{id_usuario},{especialidad}|".encode()
-            
+                # Obtener id del médico desde la tabla medico
+                cursor.execute("SELECT id FROM medico WHERE id_usuario = %s", (id_usuario_medico,))
+                medico = cursor.fetchone()
 
-            # Enviar la respuesta al cliente
+                if medico:
+                    id_medico = medico[0]
+
+                    # Obtener todos los horarios de ese médico
+                    cursor.execute("""
+                        SELECT id, fecha, horario FROM horario
+                        WHERE id_medico = %s
+                    """, (id_medico,))
+                    horarios = cursor.fetchall()
+
+                    # Armar la respuesta
+                    respuesta = b'repor|'
+                    for id_horario, fecha, hora in horarios:
+                        respuesta += f"{id_horario}-{fecha}-{hora}|".encode()
+                else:
+                    respuesta = b'repor|MedicoNoEncontrado|'
+    
+            # Enviar respuesta
             numero = str(len(respuesta)).rjust(5, '0')
             respuesta = numero.encode() + respuesta
-            print('Enviando {!r}'.format(respuesta))
+            print(' Respuesta : [{!r}]'.format(respuesta))
             sock.sendall(respuesta)
+
+        print("=" * 40)
 
 finally:
     print('Cerrando socket y conexión a la base de datos')

@@ -19,7 +19,6 @@ cur.execute("""
 
 # Confirmar los cambios
 conn.commit()
-
 # Cerrar el cursor y la conexión
 cur.close()
 conn.close()

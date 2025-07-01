@@ -9,7 +9,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Conectar al puerto 5000 donde está escuchando el servicio
 bus_address = ('localhost', 5000)
-print('Conectando a {} puerto {}'.format(*bus_address))
+# print('Conectando a {} puerto {}'.format(*bus_address))
 sock.connect(bus_address)
 
 # Conectar a la base de datos
@@ -48,12 +48,12 @@ def send_email(to_email, subject, body):
 try:
     # Enviar mensaje de inicio para iniciar el servicio de notificación
     message = b'00010sinitnotif'
-    print('Enviando {!r}'.format(message))
+    #print('Enviando {!r}'.format(message))
     sock.sendall(message)
     sinit = 1
 
     while True:
-        print(" [ Esperando transacción ... ]")
+        
         amount_received = 0
         amount_expected = int(sock.recv(5))
 
@@ -61,13 +61,16 @@ try:
             data = sock.recv(amount_expected - amount_received)
             amount_received += len(data)
 
-        print(" [ Procesando ... ]")
-        print(' -Mensaje recibido {!r}'.format(data))
-
+        print("=" * 40)
+        print("       SERVICIO NOTIFICACION")
+        
+        print(' \n Respuesta : [{!r}]'.format(data))
+        
         if sinit == 1:
             sinit = 0
-            print(' -Recibido mensaje de inicio (sinit answer)')
+            print(" Mensaje (sinit answer): servicio OK")
         else:
+            
             mensaje = data.decode()
             servicio = mensaje[:5]  # 'notif'
             datos = mensaje[5:].split('|')
@@ -114,6 +117,8 @@ try:
                 # Si no existe el usuario o la cita
                 respuesta = b'00030notifUsuarioOCitaNoEncontrados'
                 sock.sendall(respuesta)
+        
+        print("=" * 40)
 
 finally:
     print('Cerrando socket y conexión a la base de datos')
